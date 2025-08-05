@@ -248,7 +248,8 @@ class AIService:
                 StrOutputParser()
             )
             
-            # Execute with callback tracking
+            # Execute with callback tracking and timing
+            start_time = time.time()
             with get_openai_callback() as cb:
                 response = chain.invoke({
                     "original_email": original_email,
@@ -256,6 +257,8 @@ class AIService:
                     "tone": tone,
                     "instructions": custom_instructions
                 })
+            end_time = time.time()
+            generation_time_ms = int((end_time - start_time) * 1000)
             
             # Parse response and format
             lines = response.split('\n')
@@ -268,6 +271,8 @@ class AIService:
                 'body': body.strip(),
                 'tone': tone,
                 'confidence': 0.85,
+                'model_used': 'qwen-4-turbo',
+                'generation_time_ms': generation_time_ms,
                 'langchain_components_used': {
                     'chains': ['RunnableSequence'],
                     'memory': 'ConversationBufferMemory',

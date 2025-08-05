@@ -86,8 +86,9 @@ function initializeComposeForm() {
                     if (generationTime) {
                         const modelUsed = result.model_used || model || 'AI';
                         const timeMs = result.generation_time_ms || 1500;
-                        const timeDisplay = `${(timeMs / 1000).toFixed(1)}s`;
-                        generationTime.textContent = `Generated in ${timeDisplay} using ${modelUsed}`;
+                        const timeDisplay = isNaN(timeMs) ? '1.5s' : `${(timeMs / 1000).toFixed(1)}s`;
+                        const modelName = modelUsed === 'qwen-4-turbo' ? 'Qwen-4' : modelUsed;
+                        generationTime.textContent = `Generated in ${timeDisplay} using ${modelName}`;
                     }
 
                     if (window.appUtils) {
