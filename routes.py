@@ -721,6 +721,37 @@ def update_smtp_settings():
         logging.error(f"Error updating SMTP settings: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/api/test-smtp-connection', methods=['POST'])
+@require_login
+def test_smtp_connection():
+    """Test SMTP connection with provided settings"""
+    try:
+        data = request.get_json()
+        
+        smtp_server = data.get('smtp_server', '').strip()
+        smtp_port = data.get('smtp_port')
+        smtp_username = data.get('smtp_username', '').strip()
+        smtp_password = data.get('smtp_password', '').strip()
+        smtp_use_tls = data.get('smtp_use_tls', True)
+        
+        if not all([smtp_server, smtp_port, smtp_username, smtp_password]):
+            return jsonify({'success': False, 'error': 'All SMTP fields are required'}), 400
+        
+        # Test connection
+        result = email_service.test_smtp_connection(
+            smtp_server=smtp_server,
+            smtp_port=int(smtp_port),
+            smtp_username=smtp_username,
+            smtp_password=smtp_password,
+            use_tls=smtp_use_tls
+        )
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logging.error(f"Error testing SMTP connection: {str(e)}")
+        return jsonify({'success': False, 'error': f'Connection test failed: {str(e)}'}), 500
+
 @app.route('/api/analyze-sentiment', methods=['POST'])
 @require_login
 def analyze_sentiment():

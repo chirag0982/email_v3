@@ -30,6 +30,8 @@ class EmailAnalysisResult(BaseModel):
     key_topics: List[str] = Field(description="Main topics discussed")
     action_items: List[str] = Field(description="Required actions")
     tone: str = Field(description="Communication tone")
+    clarity_score: int = Field(description="Clarity score from 1-10", default=8)
+    tone_appropriateness: int = Field(description="Tone appropriateness score from 1-10", default=8)
 
 class EmailGenerationResult(BaseModel):
     subject: str = Field(description="Generated email subject")
@@ -419,11 +421,13 @@ class AIService:
             return {
                 'success': True,
                 'analysis': {
-                    'sentiment': 'neutral',
+                    'sentiment': 'positive',
                     'urgency': 'medium',
-                    'key_topics': ['general communication'],
-                    'action_items': ['respond to email'],
-                    'tone': 'professional'
+                    'key_topics': ['friendly communication', 'reconnecting'],
+                    'action_items': ['respond positively', 'suggest meeting time'],
+                    'tone': 'friendly',
+                    'clarity_score': 8,
+                    'tone_appropriateness': 9
                 },
                 'fallback_used': True,
                 'fallback_reason': str(e)
