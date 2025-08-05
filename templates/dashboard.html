@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - AI Email Assistant{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-1">Welcome back, {{ user.first_name or user.email.split('@')[0] }}!</h1>
+                <p class="text-muted mb-0">Here's your email productivity overview</p>
+            </div>
+            <div>
+                <a href="{{ url_for('compose') }}" class="btn btn-primary">
+                    <i data-feather="edit"></i> Compose Email
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Analytics Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-primary bg-opacity-10 rounded-circle p-3">
+                            <i data-feather="mail" class="text-primary"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <div class="fw-bold h4 mb-0">{{ analytics.total_emails or 0 }}</div>
+                        <div class="text-muted small">Total Emails</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-success bg-opacity-10 rounded-circle p-3">
+                            <i data-feather="send" class="text-success"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <div class="fw-bold h4 mb-0">{{ analytics.sent_emails or 0 }}</div>
+                        <div class="text-muted small">Emails Sent</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-warning bg-opacity-10 rounded-circle p-3">
+                            <i data-feather="clock" class="text-warning"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <div class="fw-bold h4 mb-0">{{ (analytics.avg_generation_time_ms / 1000) | round(1) or 0 }}s</div>
+                        <div class="text-muted small">Avg Generation Time</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="bg-info bg-opacity-10 rounded-circle p-3">
+                            <i data-feather="star" class="text-info"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <div class="fw-bold h4 mb-0">{{ analytics.avg_user_rating or 'N/A' }}</div>
+                        <div class="text-muted small">Avg Rating</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Emails -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent Emails</h5>
+                    <a href="{{ url_for('compose') }}" class="btn btn-sm btn-outline-primary">
+                        <i data-feather="plus"></i> New Email
+                    </a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_emails %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Subject</th>
+                                <th>Status</th>
+                                <th>AI Model</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for email in recent_emails %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i data-feather="mail" class="me-2 text-muted"></i>
+                                        <div>
+                                            <div class="fw-medium">{{ email.subject or 'No Subject' }}</div>
+                                            {% if email.to_addresses %}
+                                            <small class="text-muted">To: {{ email.to_addresses | join(', ') }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% set status_class = {
+                                        'draft': 'secondary',
+                                        'sent': 'success',
+                                        'delivered': 'info',
+                                        'opened': 'primary',
+                                        'replied': 'warning',
+                                        'failed': 'danger'
+                                    } %}
+                                    <span class="badge bg-{{ status_class.get(email.status.value, 'secondary') }}">
+                                        {{ email.status.value.title() }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if email.ai_model_used %}
+                                        
+                                            <small class="text-muted">
+                                            AI Model: {% if email.ai_model_used %}{{ email.ai_model_used.value.replace('-', ' ').title() }}{% else %}N/A{% endif %}
+                                        </small>
+                                       
+                                    {% else %}
+                                    <small class="text-muted">Manual</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ email.created_at.strftime('%m/%d %H:%M') }}</small>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        {% if email.status.value == 'draft' %}
+                                        <a href="{{ url_for('compose') }}?edit={{ email.id }}" class="btn btn-outline-primary btn-sm">
+                                            <i data-feather="edit-2"></i>
+                                        </a>
+                                        {% else %}
+                                        <button class="btn btn-outline-secondary btn-sm" disabled>
+                                            <i data-feather="eye"></i>
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i data-feather="mail" class="text-muted mb-3" style="width: 48px; height: 48px;"></i>
+                    <h6 class="text-muted">No emails yet</h6>
+                    <p class="text-muted">Start by composing your first AI-powered email!</p>
+                    <a href="{{ url_for('compose') }}" class="btn btn-primary">
+                        <i data-feather="edit"></i> Compose Email
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions & Teams -->
+    <div class="col-lg-4">
+        <!-- Quick Actions -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-bottom">
+                <h6 class="mb-0">Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('compose') }}" class="btn btn-primary">
+                        <i data-feather="edit"></i> Compose Email
+                    </a>
+                    <a href="{{ url_for('templates') }}" class="btn btn-outline-secondary">
+                        <i data-feather="file-text"></i> Browse Templates
+                    </a>
+                    <a href="{{ url_for('analytics') }}" class="btn btn-outline-info">
+                        <i data-feather="bar-chart-2"></i> View Analytics
+                    </a>
+                    <a href="{{ url_for('settings') }}" class="btn btn-outline-warning">
+                        <i data-feather="settings"></i> Email Settings
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Teams -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">My Teams</h6>
+                    <a href="{{ url_for('team') }}" class="btn btn-sm btn-outline-primary">
+                        <i data-feather="plus"></i> Join/Create
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if teams %}
+                <div class="list-group list-group-flush">
+                    {% for team in teams %}
+                    <div class="list-group-item border-0 px-0">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <div class="bg-primary bg-opacity-10 rounded-circle p-2">
+                                    <i data-feather="users" class="text-primary"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <div class="fw-medium">{{ team.name }}</div>
+                                <small class="text-muted">{{ team.members | length }} members</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-3">
+                    <i data-feather="users" class="text-muted mb-2"></i>
+                    <p class="text-muted mb-0 small">No teams yet</p>
+                    <a href="{{ url_for('team') }}" class="small">Create or join a team</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AI Model Usage Chart -->
+{% if analytics.model_usage %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white border-bottom">
+                <h6 class="mb-0">AI Model Usage (Last 30 Days)</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="modelUsageChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+{% if analytics.model_usage %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Model Usage Chart
+    const ctx = document.getElementById('modelUsageChart').getContext('2d');
+    const modelUsage = {{ analytics.model_usage | tojson }};
+
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(modelUsage),
+            datasets: [{
+                data: Object.values(modelUsage),
+                backgroundColor: [
+                    '#0d6efd',
+                    '#20c997',
+                    '#ffc107',
+                    '#dc3545',
+                    '#6f42c1'
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right'
+                }
+            }
+        }
+    });
+});
+</script>
+{% endif %}
+{% endblock %}
