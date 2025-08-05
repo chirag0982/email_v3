@@ -2,6 +2,7 @@ modules = ["python-3.11"]
 
 [nix]
 channel = "stable-25_05"
+packages = ["bash", "iana-etc"]
 
 [workflows]
 runButton = "Project"
@@ -13,24 +14,17 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Hello World Program"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "hello_world_test"
+args = "AI Email Assistant"
 
 [[workflows.workflow]]
-name = "Hello World Program"
+name = "AI Email Assistant"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python hello_world.py"
+args = "python hybrid_main.py"
+waitForPort = 5000
 
-[[workflows.workflow]]
-name = "hello_world_test"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python hello_world.py"
+[[ports]]
+localPort = 5000
+externalPort = 80
