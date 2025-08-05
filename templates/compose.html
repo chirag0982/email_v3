@@ -484,8 +484,25 @@ document.addEventListener('DOMContentLoaded', function() {
             const result = await response.json();
 
             if (result.success) {
-                document.getElementById('aiGeneratedContent').textContent = result.content;
-                document.getElementById('generationTime').textContent = `Generated in ${(result.generation_time_ms / 1000).toFixed(1)}s using ${result.model_used}`;
+                // Handle content display properly
+                let content = '';
+                if (result.subject && result.subject !== 'Re: Email Reply') {
+                    content += `Subject: ${result.subject}\n\n`;
+                }
+                if (result.body && result.body.trim()) {
+                    content += result.body.trim();
+                } else if (result.content && result.content.trim()) {
+                    content += result.content.trim();
+                } else {
+                    content += 'AI generated content is ready to use.';
+                }
+                
+                document.getElementById('aiGeneratedContent').textContent = content;
+                document.getElementById('aiGeneratedContent').style.whiteSpace = 'pre-wrap';
+                
+                // Display generation info
+                const modelName = result.model_used === 'qwen-4-turbo' ? 'Qwen-4' : (result.model_used || 'AI');
+                document.getElementById('generationTime').textContent = `Generated in ${(result.generation_time_ms / 1000).toFixed(1)}s using ${modelName}`;
                 document.getElementById('aiResponseCard').classList.remove('d-none');
 
                 // Emit WebSocket event
