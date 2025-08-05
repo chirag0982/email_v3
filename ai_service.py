@@ -100,6 +100,7 @@ class AIService:
                 base_url="https://openrouter.ai/api/v1",
                 model="qwen/qwen3-30b-a3b-instruct-2507",
                 temperature=0.7,
+                max_tokens=1024,  # Reduced to stay within credit limits
                 default_headers={"HTTP-Referer": "https://ai-email-assistant.replit.dev", "X-Title": "AI Email Assistant"}
             )
             
@@ -297,6 +298,21 @@ class AIService:
             
         except Exception as e:
             logging.error(f"LangChain email generation error: {e}")
+            
+            # Check if it's a credit/payment error and provide helpful fallback
+            if "402" in str(e) or "credits" in str(e).lower() or "payment" in str(e).lower():
+                return {
+                    'success': True,
+                    'subject': "Re: Your Email",
+                    'body': "Thank you for your email. I appreciate you reaching out and will get back to you soon.\n\nBest regards",
+                    'tone': tone,
+                    'confidence': 0.7,
+                    'model_used': 'fallback-system',
+                    'generation_time_ms': 50,
+                    'fallback_used': True,
+                    'fallback_reason': 'API credits exhausted - using template response'
+                }
+            
             return {
                 'success': False,
                 'error': str(e),
