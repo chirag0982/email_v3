@@ -265,6 +265,12 @@ class AIService:
             subject = next((line.replace('Subject:', '').strip() for line in lines if line.startswith('Subject:')), "Re: Email Reply")
             body = '\n'.join(line for line in lines if not line.startswith('Subject:') and line.strip())
             
+            # If no subject/body structure, use the whole response as body
+            if not body.strip() and response.strip():
+                body = response.strip()
+                
+            logging.info(f"AI Response parsed - Subject: '{subject}', Body length: {len(body)}, Raw response length: {len(response)}")
+            
             return {
                 'success': True,
                 'subject': subject,

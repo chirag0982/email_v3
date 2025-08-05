@@ -61,6 +61,8 @@ function initializeComposeForm() {
 
                 const result = await response.json();
                 console.log('AI Generation Result:', result);
+                console.log('Subject:', result.subject);
+                console.log('Body:', result.body);
 
                 if (result.success) {
                     // Show AI response card
@@ -68,18 +70,25 @@ function initializeComposeForm() {
                         aiResponseCard.classList.remove('d-none');
                     }
                     
-                    // Display generated content
+                    // Display generated content with better handling
                     if (aiGeneratedContent) {
                         let content = '';
-                        if (result.subject) {
+                        
+                        // Handle different response formats
+                        if (result.subject && result.subject !== 'Re: Email Reply') {
                             content += `Subject: ${result.subject}\n\n`;
                         }
-                        if (result.body) {
-                            content += result.body;
-                        } else if (result.content) {
-                            content = result.content;
+                        
+                        if (result.body && result.body.trim()) {
+                            content += result.body.trim();
+                        } else if (result.content && result.content.trim()) {
+                            content += result.content.trim();
+                        } else {
+                            content += 'AI generated a response, but the content appears to be empty. Please try again.';
                         }
+                        
                         aiGeneratedContent.textContent = content;
+                        console.log('Final content set:', content);
                     }
                     
                     // Show generation info
