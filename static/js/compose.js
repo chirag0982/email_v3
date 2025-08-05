@@ -1,4 +1,3 @@
-
 // Email Compose Page JavaScript
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -21,7 +20,7 @@ function initializeComposeForm() {
     if (generateBtn) {
         generateBtn.addEventListener('click', async function(e) {
             e.preventDefault();
-            
+
             const originalEmail = originalEmailInput?.value || '';
             const context = contextInput?.value || '';
             const tone = toneSelect?.value || 'professional';
@@ -41,9 +40,9 @@ function initializeComposeForm() {
             generateBtn.disabled = true;
             const originalText = generateBtn.innerHTML;
             generateBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Generating...';
-            
+
             showLoadingOverlay('Generating AI response...');
-            
+
             try {
                 const response = await fetch('/api/generate-reply', {
                     method: 'POST',
@@ -69,16 +68,16 @@ function initializeComposeForm() {
                     if (aiResponseCard) {
                         aiResponseCard.classList.remove('d-none');
                     }
-                    
+
                     // Display generated content with better handling
                     if (aiGeneratedContent) {
                         let content = '';
-                        
+
                         // Handle different response formats
                         if (result.subject && result.subject.trim() && result.subject !== 'Re: Email Reply') {
                             content += `Subject: ${result.subject}\n\n`;
                         }
-                        
+
                         if (result.body && result.body.trim()) {
                             content += result.body.trim();
                         } else if (result.content && result.content.trim()) {
@@ -86,20 +85,20 @@ function initializeComposeForm() {
                         } else {
                             content += 'AI generated a response, but the content appears to be empty. Please try again.';
                         }
-                        
+
                         console.log('Setting content to element:', aiGeneratedContent);
                         console.log('Content being set:', content);
-                        
+
                         if (aiGeneratedContent) {
                             aiGeneratedContent.textContent = content;
                             aiGeneratedContent.style.whiteSpace = 'pre-wrap';
-                            
+
                             // Force visibility test
                             console.log('Element after setting content:', aiGeneratedContent.textContent);
                             console.log('Element visibility:', window.getComputedStyle(aiGeneratedContent).display);
                         }
                     }
-                    
+
                     // Show generation info
                     if (generationTime) {
                         const modelUsed = result.model_used || model || 'AI';
@@ -133,7 +132,7 @@ function initializeComposeForm() {
                 generateBtn.disabled = false;
                 generateBtn.innerHTML = originalText;
                 hideLoadingOverlay();
-                
+
                 // Refresh feather icons
                 if (typeof feather !== 'undefined') {
                     feather.replace();
