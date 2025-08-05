@@ -322,53 +322,146 @@ class AIService:
             }
     
     def suggest_email_improvements(self, email_content: str) -> Dict[str, Any]:
-        """Suggest email improvements using simple analysis approach"""
+        """Advanced AI-powered email improvement suggestions with comprehensive analysis"""
         try:
-            # Simple analysis approach that always works
             suggestions = []
+            improvements = []
             
-            # Analyze content and provide specific suggestions
-            if len(email_content) < 50:
-                suggestions.append("Consider adding more detail to make your message clearer")
+            # 1. STRUCTURE ANALYSIS
+            lines = [line.strip() for line in email_content.split('\n') if line.strip()]
+            paragraphs = email_content.split('\n\n')
             
-            if not any(greeting in email_content.lower() for greeting in ['hi', 'hello', 'dear', 'greetings']):
-                suggestions.append("Add a friendly greeting to make your email more personal")
+            # Check email structure
+            has_greeting = any(greeting in email_content.lower() for greeting in ['hi', 'hello', 'dear', 'greetings', 'good morning', 'good afternoon'])
+            has_closing = any(closing in email_content.lower() for closing in ['regards', 'sincerely', 'best', 'thanks', 'cheers', 'yours'])
+            
+            if not has_greeting:
+                suggestions.append("📝 Add a professional greeting (e.g., 'Dear [Name]' or 'Hi [Name]')")
+            if not has_closing:
+                suggestions.append("📝 Include a proper closing (e.g., 'Best regards' or 'Thank you')")
                 
-            if not any(closing in email_content.lower() for closing in ['regards', 'sincerely', 'best', 'thanks']):
-                suggestions.append("Include a professional closing like 'Best regards' or 'Thank you'")
-                
-            if len([s for s in email_content.split('.') if s.strip()]) > 3:
-                suggestions.append("Break long sentences into shorter ones for better readability")
-                
-            if email_content.isupper():
-                suggestions.append("Avoid using all capital letters as it may appear aggressive")
-            elif email_content.islower():
-                suggestions.append("Use proper capitalization for a more professional appearance")
-                
-            # Always provide at least 3 suggestions
+            # 2. CLARITY AND READABILITY ANALYSIS
+            words = email_content.split()
+            sentences = [s.strip() for s in email_content.replace('!', '.').replace('?', '.').split('.') if s.strip()]
+            
+            # Average sentence length
+            avg_sentence_length = sum(len(s.split()) for s in sentences) / len(sentences) if sentences else 0
+            if avg_sentence_length > 25:
+                suggestions.append("✂️ Break long sentences into shorter ones (current average: {:.1f} words)".format(avg_sentence_length))
+            
+            # Paragraph length
+            long_paragraphs = [p for p in paragraphs if len(p.split()) > 80]
+            if long_paragraphs:
+                suggestions.append("📄 Break long paragraphs into smaller chunks for better readability")
+            
+            # 3. TONE AND PROFESSIONAL LANGUAGE ANALYSIS
+            casual_words = ['gonna', 'wanna', 'yeah', 'yep', 'ok', 'stuff', 'things', 'kinda', 'sorta']
+            found_casual = [word for word in casual_words if word in email_content.lower()]
+            if found_casual:
+                suggestions.append("🎯 Replace casual language: {} → more professional alternatives".format(', '.join(found_casual[:3])))
+            
+            # Weak language detection
+            weak_phrases = ['i think', 'maybe', 'perhaps', 'i guess', 'sort of', 'kind of']
+            found_weak = [phrase for phrase in weak_phrases if phrase in email_content.lower()]
+            if found_weak:
+                suggestions.append("💪 Strengthen language by removing uncertain phrases like '{}'".format(found_weak[0]))
+            
+            # 4. ACTION-ORIENTED IMPROVEMENTS
+            action_verbs = ['please', 'need', 'require', 'request', 'would like', 'could you']
+            has_clear_action = any(verb in email_content.lower() for verb in action_verbs)
+            question_marks = email_content.count('?')
+            
+            if not has_clear_action and question_marks == 0:
+                suggestions.append("🎯 Add a clear call-to-action or specific request")
+            
+            # 5. FORMATTING AND PRESENTATION
+            if len(email_content) > 500 and email_content.count('\n') < 3:
+                suggestions.append("📋 Use bullet points or numbered lists for multiple items")
+            
+            # Check for excessive punctuation
+            if email_content.count('!') > 2:
+                suggestions.append("⚡ Reduce exclamation marks for a more professional tone")
+            
+            # 6. SPECIFIC CONTENT IMPROVEMENTS
+            if len(email_content) < 30:
+                suggestions.append("📝 Provide more context and detail to make your message clearer")
+            elif len(email_content) > 1000:
+                suggestions.append("✂️ Consider condensing your message - shorter emails get better responses")
+            
+            # 7. EMAIL ETIQUETTE
+            if not email_content.lower().startswith(('hi', 'hello', 'dear', 'good')):
+                suggestions.append("👋 Start with a greeting to create a personal connection")
+            
+            # 8. AI-POWERED CONTEXTUAL SUGGESTIONS
+            if self.langchain_models and len(suggestions) < 4:
+                try:
+                    model = self.langchain_models['qwen-4-turbo']
+                    prompt = ChatPromptTemplate.from_messages([
+                        ("system", "You are an expert email writing coach. Analyze this email and provide 2-3 specific, actionable improvements focusing on clarity, professionalism, and effectiveness."),
+                        ("human", "Email to improve:\n{email_content}\n\nProvide specific suggestions with clear explanations.")
+                    ])
+                    
+                    chain = prompt | model | StrOutputParser()
+                    ai_response = chain.invoke({"email_content": email_content})
+                    
+                    # Parse AI suggestions
+                    ai_lines = [line.strip() for line in ai_response.split('\n') if line.strip() and len(line.strip()) > 20]
+                    for line in ai_lines[:2]:  # Add top 2 AI suggestions
+                        if not any(existing in line.lower() for existing in [s.lower() for s in suggestions]):
+                            suggestions.append(f"🤖 {line}")
+                            
+                except Exception as ai_error:
+                    logging.warning(f"AI suggestion generation failed: {ai_error}")
+            
+            # 9. ENSURE MINIMUM QUALITY SUGGESTIONS
             if len(suggestions) < 3:
-                suggestions.extend([
-                    "Consider proofreading for spelling and grammar",
-                    "Make your main request or point clear early in the email",
-                    "Use bullet points for multiple items to improve readability"
-                ])
+                fallback_suggestions = [
+                    "📧 Consider adding a clear subject line that summarizes your main point",
+                    "🔍 Proofread for spelling and grammar errors before sending",
+                    "🎯 State your main request or purpose in the first paragraph",
+                    "📞 Include your contact information if a response is needed",
+                    "⏰ Mention any deadlines or time-sensitive information clearly"
+                ]
+                
+                for fallback in fallback_suggestions:
+                    if len(suggestions) < 5 and not any(key in fallback.lower() for key in [s.lower() for s in suggestions]):
+                        suggestions.append(fallback)
+            
+            # 10. CATEGORIZE AND PRIORITIZE SUGGESTIONS
+            priority_suggestions = [s for s in suggestions if any(marker in s for marker in ['📝', '🎯', '💪'])]
+            other_suggestions = [s for s in suggestions if s not in priority_suggestions]
+            
+            final_suggestions = (priority_suggestions + other_suggestions)[:6]
             
             return {
                 'success': True,
-                'suggestions': suggestions[:5]
+                'suggestions': final_suggestions,
+                'analysis_summary': {
+                    'word_count': len(words),
+                    'sentence_count': len(sentences),
+                    'readability_score': min(10, max(1, 10 - (avg_sentence_length - 15) / 5)) if avg_sentence_length > 0 else 8,
+                    'structure_score': (8 if has_greeting else 6) + (2 if has_closing else 0),
+                    'improvement_areas': len(final_suggestions)
+                }
             }
             
         except Exception as e:
-            logging.error(f"Error suggesting improvements: {e}")
+            logging.error(f"Error in comprehensive email analysis: {e}")
             return {
                 'success': True,
                 'suggestions': [
-                    "Add a clear subject line",
-                    "Use professional greeting and closing",
-                    "Keep paragraphs short and focused",
-                    "Proofread for errors before sending",
-                    "Make your main point clear and actionable"
-                ]
+                    "📝 Add a professional greeting and closing",
+                    "🎯 State your main purpose clearly in the first paragraph", 
+                    "📄 Break content into shorter, focused paragraphs",
+                    "💪 Use confident, professional language",
+                    "🔍 Proofread carefully before sending"
+                ],
+                'analysis_summary': {
+                    'word_count': len(email_content.split()),
+                    'readability_score': 7,
+                    'structure_score': 6,
+                    'improvement_areas': 5
+                }
             }
     
     def analyze_email_with_langchain(self, email_content: str) -> Dict[str, Any]:
