@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Login - AI Email Assistant{% endblock %}
+
+{% block content %}
+<div class="container-fluid vh-100">
+    <div class="row h-100">
+        <!-- Left side - Login Form -->
+        <div class="col-md-6 d-flex align-items-center justify-content-center">
+            <div class="auth-form-container">
+                <div class="text-center mb-4">
+                    <h2 class="h3 mb-3 fw-normal">
+                        <i data-feather="mail" class="me-2"></i>
+                        AI Email Assistant
+                    </h2>
+                    <p class="text-muted">Sign in to your account</p>
+                </div>
+
+                <form id="loginForm" method="POST" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email address</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                        <div class="invalid-feedback">
+                            Please provide a valid email.
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                        <div class="invalid-feedback">
+                            Please provide a password.
+                        </div>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="rememberMe">
+                        <label class="form-check-label" for="rememberMe">
+                            Remember me
+                        </label>
+                    </div>
+
+                    <button class="w-100 btn btn-primary btn-lg" type="submit" id="loginBtn">
+                        <i data-feather="log-in" class="me-2"></i>
+                        Sign In
+                    </button>
+
+                    <div class="text-center mt-3">
+                        <p class="mb-0">Don't have an account? 
+                            <a href="{{ url_for('register') }}" class="text-decoration-none">Sign up</a>
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Right side - Feature highlights -->
+        <div class="col-md-6 bg-primary d-none d-md-flex align-items-center justify-content-center text-white">
+            <div class="text-center">
+                <h3 class="mb-4">Welcome to AI Email Assistant</h3>
+                <div class="row">
+                    <div class="col-12 mb-4">
+                        <i data-feather="zap" class="mb-2" style="width: 48px; height: 48px;"></i>
+                        <h5>AI-Powered Replies</h5>
+                        <p>Generate professional email responses using advanced AI models</p>
+                    </div>
+                    <div class="col-12 mb-4">
+                        <i data-feather="users" class="mb-2" style="width: 48px; height: 48px;"></i>
+                        <h5>Team Collaboration</h5>
+                        <p>Work together on email drafts with real-time collaboration features</p>
+                    </div>
+                    <div class="col-12 mb-4">
+                        <i data-feather="trending-up" class="mb-2" style="width: 48px; height: 48px;"></i>
+                        <h5>Smart Analytics</h5>
+                        <p>Analyze email sentiment and get improvement suggestions</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.auth-form-container {
+    max-width: 400px;
+    width: 100%;
+    padding: 2rem;
+}
+
+.bg-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    transform: translateY(-1px);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
+    
+    if (loginForm) {
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!loginForm.checkValidity()) {
+                e.stopPropagation();
+                loginForm.classList.add('was-validated');
+                return;
+            }
+            
+            const formData = new FormData(loginForm);
+            const data = {
+                email: formData.get('email'),
+                password: formData.get('password')
+            };
+            
+            // Show loading state
+            const originalText = loginBtn.innerHTML;
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<i data-feather="loader" class="me-2"></i>Signing in...';
+            
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    window.location.href = result.redirect || '/dashboard';
+                } else {
+                    alert(result.error || 'Login failed');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('Network error occurred');
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = originalText;
+                if (typeof feather !== 'undefined') {
+                    feather.replace();
+                }
+            }
+        });
+    }
+    
+    // Initialize feather icons
+    if (typeof feather !== 'undefined') {
+        feather.replace();
+    }
+});
+</script>
+{% endblock %}

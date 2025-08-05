@@ -14,20 +14,11 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "AI Email Assistant"
+args = "Hello World"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Hello World"
-
-[[workflows.workflow]]
-name = "AI Email Assistant"
-author = "agent"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "python hybrid_main.py"
-waitForPort = 5000
+args = "Local Auth AI Assistant"
 
 [[workflows.workflow]]
 name = "Hello World"
@@ -36,6 +27,15 @@ author = "agent"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python hello_world.py"
+
+[[workflows.workflow]]
+name = "Local Auth AI Assistant"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python app_local.py"
+waitForPort = 5000
 
 [[ports]]
 localPort = 5000

@@ -42,6 +42,9 @@ class User(UserMixin, db.Model):
     last_name = db.Column(db.String, nullable=True)
     profile_image_url = db.Column(db.String, nullable=True)
     
+    # Authentication
+    password_hash = db.Column(db.String, nullable=True)  # For local auth
+    
     # Email settings
     smtp_server = db.Column(db.String, nullable=True)
     smtp_port = db.Column(db.Integer, nullable=True)

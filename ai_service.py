@@ -322,40 +322,76 @@ class AIService:
             }
     
     def suggest_email_improvements(self, email_content: str) -> Dict[str, Any]:
-        """Suggest email improvements using simple analysis approach"""
+        """Suggest email improvements using comprehensive content analysis"""
         try:
-            # Simple analysis approach that always works
             suggestions = []
+            content_lower = email_content.lower()
+            lines = email_content.split('\n')
+            words = email_content.split()
             
-            # Analyze content and provide specific suggestions
-            if len(email_content) < 50:
-                suggestions.append("Consider adding more detail to make your message clearer")
+            # Structure and format analysis
+            if len(email_content.strip()) < 30:
+                suggestions.append("Your email is very brief. Consider adding more context or details to help the recipient understand your message better.")
             
-            if not any(greeting in email_content.lower() for greeting in ['hi', 'hello', 'dear', 'greetings']):
-                suggestions.append("Add a friendly greeting to make your email more personal")
-                
-            if not any(closing in email_content.lower() for closing in ['regards', 'sincerely', 'best', 'thanks']):
-                suggestions.append("Include a professional closing like 'Best regards' or 'Thank you'")
-                
-            if len([s for s in email_content.split('.') if s.strip()]) > 3:
-                suggestions.append("Break long sentences into shorter ones for better readability")
-                
+            # Greeting analysis
+            greetings = ['hi ', 'hello ', 'dear ', 'greetings', 'good morning', 'good afternoon', 'good evening']
+            has_greeting = any(greeting in content_lower for greeting in greetings)
+            if not has_greeting:
+                suggestions.append("Start with a proper greeting like 'Hi [Name]' or 'Dear [Name]' to create a personal connection.")
+            
+            # Closing analysis
+            closings = ['regards', 'sincerely', 'best wishes', 'thank you', 'thanks', 'cheers', 'yours truly']
+            has_closing = any(closing in content_lower for closing in closings)
+            if not has_closing:
+                suggestions.append("End with a professional closing such as 'Best regards', 'Thank you', or 'Sincerely' followed by your name.")
+            
+            # Paragraph structure
+            if len(lines) == 1 and len(email_content) > 200:
+                suggestions.append("Break your content into shorter paragraphs. Each paragraph should focus on one main idea for better readability.")
+            
+            # Sentence length analysis
+            sentences = [s.strip() for s in email_content.replace('!', '.').replace('?', '.').split('.') if s.strip()]
+            long_sentences = [s for s in sentences if len(s.split()) > 25]
+            if long_sentences:
+                suggestions.append("Some sentences are quite long. Consider breaking them into shorter, clearer sentences for better comprehension.")
+            
+            # Capitalization check
             if email_content.isupper():
-                suggestions.append("Avoid using all capital letters as it may appear aggressive")
-            elif email_content.islower():
-                suggestions.append("Use proper capitalization for a more professional appearance")
-                
-            # Always provide at least 3 suggestions
-            if len(suggestions) < 3:
-                suggestions.extend([
-                    "Consider proofreading for spelling and grammar",
-                    "Make your main request or point clear early in the email",
-                    "Use bullet points for multiple items to improve readability"
-                ])
+                suggestions.append("Avoid writing in ALL CAPITALS as it may seem like you're shouting. Use normal capitalization for a professional tone.")
+            elif len([w for w in words if w and w[0].isupper()]) / len(words) < 0.1 and len(words) > 10:
+                suggestions.append("Use proper capitalization. Start sentences with capital letters and capitalize proper nouns for a professional appearance.")
+            
+            # Tone and politeness
+            polite_words = ['please', 'thank', 'appreciate', 'kindly', 'would you', 'could you']
+            if not any(word in content_lower for word in polite_words) and ('need' in content_lower or 'want' in content_lower or 'require' in content_lower):
+                suggestions.append("Consider using more polite language. Add words like 'please', 'thank you', or 'I would appreciate' to make your tone more courteous.")
+            
+            # Call to action clarity
+            action_indicators = ['please', 'need', 'require', 'request', 'help', 'respond', 'reply', 'send', 'provide']
+            if any(word in content_lower for word in action_indicators):
+                if not any(word in content_lower for word in ['by', 'before', 'deadline', 'asap', 'urgent']):
+                    suggestions.append("If you need a response or action, consider specifying a timeframe (e.g., 'by Friday' or 'at your earliest convenience').")
+            
+            # Specificity check
+            vague_words = ['thing', 'stuff', 'something', 'anything', 'everything']
+            if any(word in content_lower for word in vague_words):
+                suggestions.append("Replace vague terms like 'thing' or 'stuff' with specific details to make your message clearer and more professional.")
+            
+            # Email purpose clarity
+            if len(sentences) > 3 and not any(word in content_lower for word in ['regarding', 'about', 'concerning', 'subject', 'purpose']):
+                suggestions.append("Consider stating the purpose of your email early. Start with something like 'I'm writing regarding...' or 'The purpose of this email is...'")
+            
+            # Always ensure we have useful suggestions
+            if len(suggestions) == 0:
+                suggestions = [
+                    "Your email looks well-structured. Consider reviewing it once more for any typos or unclear phrases.",
+                    "Make sure your main message is clear and easy to understand.",
+                    "Check that all necessary information is included for the recipient to respond appropriately."
+                ]
             
             return {
                 'success': True,
-                'suggestions': suggestions[:5]
+                'suggestions': suggestions[:6]  # Limit to 6 most relevant suggestions
             }
             
         except Exception as e:
@@ -363,11 +399,11 @@ class AIService:
             return {
                 'success': True,
                 'suggestions': [
-                    "Add a clear subject line",
-                    "Use professional greeting and closing",
-                    "Keep paragraphs short and focused",
-                    "Proofread for errors before sending",
-                    "Make your main point clear and actionable"
+                    "Review your email for clarity and completeness",
+                    "Ensure proper greeting and closing",
+                    "Check spelling and grammar before sending",
+                    "Make your main request or message clear",
+                    "Consider the recipient's perspective when writing"
                 ]
             }
     
