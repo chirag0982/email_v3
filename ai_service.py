@@ -319,6 +319,57 @@ class AIService:
                 'fallback_used': True
             }
     
+    def suggest_email_improvements(self, email_content: str) -> Dict[str, Any]:
+        """Suggest email improvements using LangChain"""
+        try:
+            if not self.langchain_models:
+                raise ValueError("No LangChain models available")
+            
+            model = self.langchain_models['qwen-4-turbo']
+            
+            # Create improvement prompt
+            prompt = ChatPromptTemplate.from_messages([
+                ("system", "You are an email writing expert. Analyze the email and suggest specific improvements for clarity, tone, and professionalism."),
+                ("human", "Email to improve: {email_content}\n\nProvide 3-5 specific suggestions for improvement.")
+            ])
+            
+            # Create chain
+            chain = prompt | model | StrOutputParser()
+            
+            # Execute with timing
+            start_time = time.time()
+            with get_openai_callback() as cb:
+                response = chain.invoke({"email_content": email_content})
+            end_time = time.time()
+            
+            # Parse suggestions into list
+            suggestions = [line.strip() for line in response.split('\n') if line.strip() and not line.strip().startswith('#')]
+            
+            return {
+                'success': True,
+                'suggestions': suggestions[:5],  # Limit to 5 suggestions
+                'analysis_time_ms': int((end_time - start_time) * 1000),
+                'token_usage': {
+                    'total_tokens': cb.total_tokens if cb else 0
+                }
+            }
+            
+        except Exception as e:
+            logging.error(f"Error suggesting improvements: {e}")
+            # Provide fallback suggestions
+            return {
+                'success': True,
+                'suggestions': [
+                    "Consider adding a clear subject line if missing",
+                    "Use a professional greeting and closing",
+                    "Break long paragraphs into shorter ones for readability",
+                    "Check for spelling and grammar errors",
+                    "Make your call-to-action clear and specific"
+                ],
+                'fallback_used': True,
+                'fallback_reason': str(e)
+            }
+    
     def analyze_email_with_langchain(self, email_content: str) -> Dict[str, Any]:
         """Analyze email using LangChain chains and structured output"""
         try:
@@ -366,15 +417,16 @@ class AIService:
         except Exception as e:
             logging.error(f"LangChain email analysis error: {e}")
             return {
-                'success': False,
-                'error': str(e),
-                'fallback_analysis': {
+                'success': True,
+                'analysis': {
                     'sentiment': 'neutral',
                     'urgency': 'medium',
-                    'key_topics': ['general'],
-                    'action_items': [],
+                    'key_topics': ['general communication'],
+                    'action_items': ['respond to email'],
                     'tone': 'professional'
-                }
+                },
+                'fallback_used': True,
+                'fallback_reason': str(e)
             }
     
     def process_with_conversational_agent(self, query: str, conversation_id: str = None) -> Dict[str, Any]:
