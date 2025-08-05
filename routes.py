@@ -763,8 +763,8 @@ def analyze_sentiment():
         if not email_content:
             return jsonify({'success': False, 'error': 'Email content is required'}), 400
         
-        result = ai_service.analyze_email_sentiment(email_content)
-        return jsonify({'success': True, 'analysis': result})
+        result = ai_service.analyze_email_with_langchain(email_content)
+        return jsonify(result)
         
     except Exception as e:
         logging.error(f"Error analyzing sentiment: {str(e)}")
@@ -782,7 +782,7 @@ def suggest_improvements():
             return jsonify({'success': False, 'error': 'Email content is required'}), 400
         
         result = ai_service.suggest_email_improvements(email_content)
-        return jsonify({'success': True, 'suggestions': result})
+        return jsonify(result)
         
     except Exception as e:
         logging.error(f"Error getting suggestions: {str(e)}")
