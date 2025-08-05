@@ -99,7 +99,8 @@ class AIService:
                 api_key=self.openrouter_api_key,
                 base_url="https://openrouter.ai/api/v1",
                 model="qwen/qwen3-30b-a3b-instruct-2507",
-                temperature=0.7
+                temperature=0.7,
+                default_headers={"HTTP-Referer": "https://ai-email-assistant.replit.dev", "X-Title": "AI Email Assistant"}
             )
             
         # OpenAI GPT model
