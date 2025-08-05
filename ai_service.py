@@ -231,10 +231,10 @@ class AIService:
             # Use RunnableSequence to create a complex processing pipeline
             model = self.langchain_models['qwen-4-turbo']
             
-            # Create prompt template
+            # Create prompt template with proper variable handling
             prompt = ChatPromptTemplate.from_messages([
-                SystemMessage(content="You are a professional email assistant. Generate appropriate email replies."),
-                HumanMessage(content="Original email: {original_email}\nContext: {context}\nTone: {tone}\nInstructions: {instructions}")
+                ("system", "You are a professional email assistant. Generate appropriate email replies. Format your response with 'Subject:' followed by the subject line, then the email body."),
+                ("human", "Original email: {original_email}\nContext: {context}\nTone: {tone}\nInstructions: {instructions}")
             ])
             
             # Create output parser

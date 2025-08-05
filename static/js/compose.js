@@ -75,7 +75,7 @@ function initializeComposeForm() {
                         let content = '';
                         
                         // Handle different response formats
-                        if (result.subject && result.subject !== 'Re: Email Reply') {
+                        if (result.subject && result.subject.trim() && result.subject !== 'Re: Email Reply') {
                             content += `Subject: ${result.subject}\n\n`;
                         }
                         
