@@ -87,8 +87,17 @@ function initializeComposeForm() {
                             content += 'AI generated a response, but the content appears to be empty. Please try again.';
                         }
                         
-                        aiGeneratedContent.textContent = content;
-                        console.log('Final content set:', content);
+                        console.log('Setting content to element:', aiGeneratedContent);
+                        console.log('Content being set:', content);
+                        
+                        if (aiGeneratedContent) {
+                            aiGeneratedContent.textContent = content;
+                            aiGeneratedContent.style.whiteSpace = 'pre-wrap';
+                            
+                            // Force visibility test
+                            console.log('Element after setting content:', aiGeneratedContent.textContent);
+                            console.log('Element visibility:', window.getComputedStyle(aiGeneratedContent).display);
+                        }
                     }
                     
                     // Show generation info

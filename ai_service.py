@@ -270,6 +270,8 @@ class AIService:
                 body = response.strip()
                 
             logging.info(f"AI Response parsed - Subject: '{subject}', Body length: {len(body)}, Raw response length: {len(response)}")
+            logging.info(f"Raw AI Response: {repr(response[:200])}")
+            logging.info(f"Parsed body: {repr(body[:200])}")
             
             return {
                 'success': True,
