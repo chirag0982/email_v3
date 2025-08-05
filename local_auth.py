@@ -118,6 +118,9 @@ class LocalAuthService:
             if not session.get('logged_in') or not session.get('user_id'):
                 if request.is_json:
                     return jsonify({'success': False, 'error': 'Login required'}), 401
+                # For auth pages and navigation, don't redirect to login
+                if request.endpoint in ['login', 'register', 'static']:
+                    return f(*args, **kwargs)
                 return redirect(url_for('login'))
             return f(*args, **kwargs)
         return decorated_function

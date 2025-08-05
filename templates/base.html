@@ -49,7 +49,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('templates') }}">
+                        <a class="nav-link" href="{{ url_for('templates_page') }}">
                             <i data-feather="file-text"></i> Templates
                         </a>
                     </li>
@@ -64,7 +64,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('api_docs') }}">
+                        <a class="nav-link" href="{{ url_for('api_documentation') }}">
                             <i data-feather="book-open"></i> API Docs
                         </a>
                     </li>
@@ -93,7 +93,7 @@
                                 <i data-feather="settings"></i> Settings
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ url_for('replit_auth.logout') }}">
+                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">
                                 <i data-feather="log-out"></i> Sign Out
                             </a></li>
                         </ul>

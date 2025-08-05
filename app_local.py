@@ -268,6 +268,60 @@ def update_smtp_settings():
         logger.error(f"Error updating SMTP settings: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/templates')
+@local_auth.require_login
+def templates_page():
+    """Email templates page"""
+    try:
+        user = local_auth.get_current_user()
+        templates = EmailTemplate.query.filter_by(user_id=user.id).all()
+        
+        return render_template('templates.html',
+                             user=user,
+                             templates=templates,
+                             ai_models=list(AIModel),
+                             email_tones=list(EmailTone))
+    except Exception as e:
+        logger.error(f"Error loading templates page: {str(e)}")
+        flash('Error loading templates page', 'error')
+        return redirect(url_for('dashboard'))
+
+@app.route('/team')
+@local_auth.require_login
+def team():
+    """Team page"""
+    try:
+        user = local_auth.get_current_user()
+        return render_template('team.html', user=user)
+    except Exception as e:
+        logger.error(f"Error loading team page: {str(e)}")
+        flash('Error loading team page', 'error')
+        return redirect(url_for('dashboard'))
+
+@app.route('/analytics')
+@local_auth.require_login
+def analytics():
+    """Analytics page"""
+    try:
+        user = local_auth.get_current_user()
+        return render_template('analytics.html', user=user)
+    except Exception as e:
+        logger.error(f"Error loading analytics page: {str(e)}")
+        flash('Error loading analytics page', 'error')
+        return redirect(url_for('dashboard'))
+
+@app.route('/api_documentation')
+@local_auth.require_login
+def api_documentation():
+    """API documentation page"""
+    try:
+        user = local_auth.get_current_user()
+        return render_template('api_documentation.html', user=user)
+    except Exception as e:
+        logger.error(f"Error loading API documentation: {str(e)}")
+        flash('Error loading API documentation', 'error')
+        return redirect(url_for('dashboard'))
+
 # Error handlers
 @app.errorhandler(404)
 def not_found_error(error):
